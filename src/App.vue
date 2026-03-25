@@ -21,27 +21,48 @@ function urlB64ToUint8Array(base64String: string) {
 }
 
 async function subscribeToPush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    console.warn('[Push] Service Worker o PushManager no soportado en este navegador');
+    return;
+  }
   try {
+    console.log('\n📲 ========== SUBSCRIBING TO PUSH ==========');
+    
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
+    console.log('[Push] Notification permission:', permission);
+    
+    if (permission !== 'granted') {
+      console.warn('[Push] ❌ Notification permission denied by user');
+      return;
+    }
 
     const registration = await navigator.serviceWorker.ready;
+    console.log('[Push] Service Worker ready');
+    
     let subscription = await registration.pushManager.getSubscription();
+    console.log('[Push] Existing subscription:', subscription ? '✅ Found' : '❌ None');
     
     if (!subscription) {
+      console.log('[Push] Creating new subscription...');
       const applicationServerKey = urlB64ToUint8Array(PUBLIC_VAPID_KEY);
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey
       });
+      console.log('[Push] ✅ New subscription created');
     }
 
+    console.log('[Push] Subscription endpoint:', subscription.endpoint.substring(0, 60) + '...');
+    
     // Enviar subscripción al backend
+    console.log('[Push] Sending subscription to backend...');
     await api.post('/notifications/subscribe', subscription);
-    console.log('[Push] Suscrito a notificaciones exitosamente');
+    console.log('[Push] ✅ Suscrito a notificaciones exitosamente');
+    console.log('📲 =====================================\n');
   } catch (err) {
-    console.error('[Push] Error en la suscripción:', err);
+    console.error('[Push] ❌ Error en la suscripción:', err.message);
+    console.error('[Push] Error type:', err.name);
+    console.error('[Push] Stack:', err.stack);
   }
 }
 
