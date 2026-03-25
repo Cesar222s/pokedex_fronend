@@ -1,7 +1,7 @@
-const CACHE_STATIC_NAME = 'pokedex-static-v3';
-const CACHE_DYNAMIC_NAME = 'pokedex-dynamic-v3';
-const CACHE_API_NAME = 'pokedex-api-v3';
-const CACHE_IMAGES_NAME = 'pokedex-images-v3';
+const CACHE_STATIC_NAME = 'pokedex-static-v4';
+const CACHE_DYNAMIC_NAME = 'pokedex-dynamic-v4';
+const CACHE_API_NAME = 'pokedex-api-v4';
+const CACHE_IMAGES_NAME = 'pokedex-images-v4';
 
 // Rutas fijas de la aplicación (App Shell)
 const APP_SHELL = [
@@ -222,10 +222,11 @@ async function networkFirstStrategy(request) {
     const networkResponse = await fetch(request.clone());
     
     if (networkResponse.ok) {
-      // Guardar en cache dinámico para próxima vez
+      // Clonar la respuesta ANTES de retornarla para evitar el error "Response body already used"
+      const responseToCache = networkResponse.clone();
       const cacheName = request.url.includes('/api/') ? CACHE_API_NAME : CACHE_DYNAMIC_NAME;
       caches.open(cacheName).then(cache => {
-        cache.put(request, networkResponse.clone());
+        cache.put(request, responseToCache);
       });
     }
     
@@ -287,8 +288,9 @@ async function cacheFirstStrategy(request, cacheName) {
     const networkResponse = await fetch(request.clone());
     
     if (networkResponse.ok) {
+      const responseToCache = networkResponse.clone();
       caches.open(cacheName).then(cache => {
-        cache.put(request, networkResponse.clone());
+        cache.put(request, responseToCache);
       });
     }
     
