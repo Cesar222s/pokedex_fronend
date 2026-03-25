@@ -38,33 +38,30 @@ onMounted(async () => {
 async function loadOpponentTeams() {
   if (!selectedOpponent.value) return
   try {
-    await api.get('/teams', { params: {} })
-    // We need the opponent's teams - we'll fetch them from the battle endpoint context
-    // For simplicity, we'll handle this in the battle route on the server
-
-    // Actually, since we can only see our own teams, for the battle we need to specify
-    // an opponent team. Let's use a simpler approach: list the opponent's teams from
-    // the friend's perspective - this requires a new endpoint or we use the teams we
-    // know the opponent has. For now, let's make it work with available data.
+    console.log('[Battle] Cargando equipos del oponente:', selectedOpponent.value)
+    const response = await api.get(`/teams/friend/${selectedOpponent.value}`)
+    opponentTeams.value = response.data.teams
+    selectedOpponentTeam.value = null
+    console.log('[Battle] Equipos cargados:', opponentTeams.value.length)
+  } catch (err: any) {
+    error.value = err.response?.data?.error || 'No se pudieron cargar los equipos'
     opponentTeams.value = []
-  } catch { /* ignore */ }
+  }
 }
 
 
 
 async function startBattle() {
-  if (!selectedOpponent.value || !selectedMyTeam.value) return
+  if (!selectedOpponent.value || !selectedMyTeam.value || !selectedOpponentTeam.value) return
   loading.value = true
   error.value = ''
   battleResult.value = null
 
   try {
-    // For battles, we use our team vs the opponent's selected team
-    // If opponent team not selected, we'll use our team (for demo)
     const result = await battlesStore.startBattle(
       selectedOpponent.value,
       selectedMyTeam.value,
-      selectedOpponentTeam.value || selectedMyTeam.value
+      selectedOpponentTeam.value
     )
     battleResult.value = result
     await battlesStore.fetchBattles()
@@ -101,9 +98,26 @@ async function startBattle() {
           </select>
         </div>
 
+        <!-- Select opponent team -->
+        <div class="setup-step">
+          <label>2. Equipo del Oponente</label>
+          <div v-if="selectedOpponent === null" class="setup-empty">
+            <p>Selecciona un oponente primero</p>
+          </div>
+          <div v-else-if="opponentTeams.length === 0" class="setup-empty">
+            <p>Tu oponente no tiene equipos</p>
+          </div>
+          <select v-else v-model="selectedOpponentTeam" class="select">
+            <option :value="null" disabled>Selecciona equipo del oponente...</option>
+            <option v-for="t in opponentTeams" :key="t.id" :value="t.id">
+              {{ t.name }} ({{ t.members.length }} Pokémon)
+            </option>
+          </select>
+        </div>
+
         <!-- Select your team -->
         <div class="setup-step">
-          <label>2. Elige tu Equipo</label>
+          <label>3. Tu Equipo</label>
           <div v-if="teamsStore.teams.length === 0" class="setup-empty">
             <p>¡Crea un equipo primero!</p>
             <router-link to="/teams" class="btn btn-sm btn-secondary">Crear Equipo</router-link>
@@ -122,7 +136,7 @@ async function startBattle() {
       <button
         class="btn btn-primary btn-lg battle-btn"
         @click="startBattle"
-        :disabled="!selectedOpponent || !selectedMyTeam || loading"
+        :disabled="!selectedOpponent || !selectedMyTeam || !selectedOpponentTeam || loading"
       >
         <i class="fas fa-bolt"></i>
         {{ loading ? 'Batallando...' : '¡Iniciar Batalla!' }}
