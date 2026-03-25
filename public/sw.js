@@ -1,7 +1,7 @@
-const CACHE_STATIC_NAME = 'pokedex-static-v2';
-const CACHE_DYNAMIC_NAME = 'pokedex-dynamic-v2';
-const CACHE_API_NAME = 'pokedex-api-v2';
-const CACHE_IMAGES_NAME = 'pokedex-images-v2';
+const CACHE_STATIC_NAME = 'pokedex-static-v3';
+const CACHE_DYNAMIC_NAME = 'pokedex-dynamic-v3';
+const CACHE_API_NAME = 'pokedex-api-v3';
+const CACHE_IMAGES_NAME = 'pokedex-images-v3';
 
 // Rutas fijas de la aplicación (App Shell)
 const APP_SHELL = [
