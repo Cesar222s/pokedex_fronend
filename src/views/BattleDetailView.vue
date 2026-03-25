@@ -8,7 +8,7 @@ const battlesStore = useBattlesStore()
 const loading = ref(true)
 
 onMounted(async () => {
-  await battlesStore.fetchBattle(Number(route.params.id))
+  await battlesStore.fetchBattle(String(route.params.id))
   loading.value = false
 })
 </script>

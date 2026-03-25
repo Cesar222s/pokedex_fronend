@@ -59,10 +59,10 @@ async function subscribeToPush() {
     await api.post('/notifications/subscribe', subscription);
     console.log('[Push] ✅ Suscrito a notificaciones exitosamente');
     console.log('📲 =====================================\n');
-  } catch (err) {
-    console.error('[Push] ❌ Error en la suscripción:', err.message);
-    console.error('[Push] Error type:', err.name);
-    console.error('[Push] Stack:', err.stack);
+  } catch (err: any) {
+    console.error('[Push] ❌ Error en la suscripción:', err?.message || err);
+    console.error('[Push] Error type:', err?.name || 'unknown');
+    console.error('[Push] Stack:', err?.stack || 'no stack trace');
   }
 }
 

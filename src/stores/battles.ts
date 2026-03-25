@@ -19,12 +19,12 @@ export const useBattlesStore = defineStore('battles', () => {
     }
   }
 
-  async function fetchBattle(id: number) {
+  async function fetchBattle(id: string) {
     loading.value = true
     try {
-      const res = await api.get(`/battles/${id}`)
-      currentBattle.value = res.data.battle
-      return res.data.battle
+      const res = await api.get(`/battles/${id}/status`)
+      currentBattle.value = res.data
+      return res.data
     } catch (err) {
       console.error('Fetch battle error:', err)
     } finally {
@@ -32,7 +32,7 @@ export const useBattlesStore = defineStore('battles', () => {
     }
   }
 
-  async function startBattle(opponentId: number, challengerTeamId: number, opponentTeamId: number) {
+  async function startBattle(opponentId: string, challengerTeamId: string, opponentTeamId: string) {
     loading.value = true
     try {
       const res = await api.post('/battles', {
@@ -50,5 +50,32 @@ export const useBattlesStore = defineStore('battles', () => {
     }
   }
 
-  return { battles, currentBattle, loading, fetchBattles, fetchBattle, startBattle }
+  async function declineBattle(id: string) {
+    loading.value = true
+    try {
+      await api.delete(`/battles/${id}`)
+      battles.value = battles.value.filter(b => b.id !== id)
+    } catch (err: any) {
+      console.error('Decline battle error:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function acceptBattle(battleId: string, teamId: string) {
+    loading.value = true
+    try {
+      const res = await api.post(`/battles/${battleId}/accept`, { team_id: teamId })
+      currentBattle.value = res.data
+      return res.data
+    } catch (err: any) {
+      console.error('Accept battle error:', err)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return { battles, currentBattle, loading, fetchBattles, fetchBattle, startBattle, declineBattle, acceptBattle }
 })

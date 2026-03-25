@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useFriendsStore } from '../stores/friends'
 import { useAuthStore } from '../stores/auth'
 
@@ -8,13 +8,34 @@ const authStore = useAuthStore()
 const friendCode = ref('')
 const successMsg = ref('')
 const copied = ref(false)
+let refreshInterval: number
 
-onMounted(async () => {
+async function loadFriendsData() {
   await authStore.fetchMe()
   await Promise.all([
     friendsStore.fetchFriends(),
     friendsStore.fetchPending()
   ])
+}
+
+onMounted(async () => {
+  await loadFriendsData()
+  
+  // Refrescar datos cada 3 segundos mientras la página está activa
+  refreshInterval = window.setInterval(async () => {
+    console.log('[Friends] Refreshing pending requests...')
+    await Promise.all([
+      friendsStore.fetchFriends(),
+      friendsStore.fetchPending()
+    ])
+  }, 3000)
+})
+
+onBeforeUnmount(() => {
+  // Limpiar intervalo cuando se desmonta la página
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+  }
 })
 
 async function addFriend() {
@@ -71,11 +92,10 @@ function copyCode() {
       <div v-if="successMsg" class="alert alert-success" style="margin-top:12px">{{ successMsg }}</div>
     </div>
 
-    <!-- Pending requests -->
-    <div v-if="friendsStore.pending.length > 0" class="section">
+    <div v-if="friendsStore.pending.length > 0" class="section pending-requests-section">
       <h2 class="section-title">
         <i class="fas fa-clock"></i> Solicitudes Pendientes
-        <span class="count-badge">{{ friendsStore.pending.length }}</span>
+        <span class="count-badge pulse">{{ friendsStore.pending.length }}</span>
       </h2>
       <div class="friends-list">
         <div v-for="req in friendsStore.pending" :key="req.id" class="friend-item glass">
@@ -194,6 +214,22 @@ function copyCode() {
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 12px;
+}
+
+.count-badge.pulse {
+  animation: pulse-red 2s infinite;
+  box-shadow: 0 0 0 rgba(239, 68, 68, 0.4);
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.pending-requests-section .friend-item {
+  border-left: 4px solid var(--accent-primary);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
 .friends-list { display: flex; flex-direction: column; gap: 10px; }

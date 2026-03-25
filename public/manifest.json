@@ -1,16 +1,22 @@
 {
-  "name": "Pokédex Neo-Brutalist",
+  "name": "Pokédex Pro",
   "short_name": "Pokédex",
-  "description": "Una aplicación full-stack de Pokédex con batallas, amigos y equipos.",
+  "description": "App full-stack con batallas en vivo, amigos y sincronización offline.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#ec4899",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "/pokedex_pwa_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pokedex_pwa_icon_512.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }
