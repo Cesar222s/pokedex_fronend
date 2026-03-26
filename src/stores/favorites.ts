@@ -11,10 +11,13 @@ export const useFavoritesStore = defineStore('favorites', () => {
     loading.value = true
     try {
       const res = await api.get('/favorites')
-      favorites.value = res.data.favorites
-      favoriteIds.value = new Set(res.data.favorites.map((f: any) => f.pokemon_id))
+      const safeFavorites = Array.isArray(res.data?.favorites) ? res.data.favorites : []
+      favorites.value = safeFavorites
+      favoriteIds.value = new Set(safeFavorites.map((f: any) => f.pokemon_id))
     } catch (err) {
       console.error('Fetch favorites error:', err)
+      favorites.value = []
+      favoriteIds.value = new Set()
     } finally {
       loading.value = false
     }

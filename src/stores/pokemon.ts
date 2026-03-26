@@ -37,14 +37,20 @@ export const usePokemonStore = defineStore('pokemon', () => {
       if (filters.value.region) params.region = filters.value.region
 
       const res = await api.get('/pokemon', { params })
+      const safeResults = Array.isArray(res.data?.results) ? res.data.results : []
+      const safeCount = Number.isFinite(res.data?.count) ? res.data.count : safeResults.length
       if (append) {
-        pokemonList.value = [...pokemonList.value, ...res.data.results]
+        pokemonList.value = [...pokemonList.value, ...safeResults]
       } else {
-        pokemonList.value = res.data.results
+        pokemonList.value = safeResults
       }
-      totalCount.value = res.data.count
+      totalCount.value = safeCount
     } catch (err) {
       console.error('Fetch pokemon error:', err)
+      if (!append) {
+        pokemonList.value = []
+        totalCount.value = 0
+      }
     } finally {
       loading.value = false
     }
@@ -53,14 +59,14 @@ export const usePokemonStore = defineStore('pokemon', () => {
   async function fetchTypes() {
     try {
       const res = await api.get('/pokemon/types')
-      types.value = res.data.types
+      types.value = Array.isArray(res.data?.types) ? res.data.types : []
     } catch { /* ignore */ }
   }
 
   async function fetchRegions() {
     try {
       const res = await api.get('/pokemon/regions')
-      regions.value = res.data.regions
+      regions.value = Array.isArray(res.data?.regions) ? res.data.regions : []
     } catch { /* ignore */ }
   }
 

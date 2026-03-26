@@ -31,6 +31,10 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const res = await api.post('/auth/login', { email, password })
+      if (!res.data?.user || !res.data?.token) {
+        error.value = 'No se pudo iniciar sesion. Verifica conexion y servidor.'
+        return false
+      }
       user.value = res.data.user
       token.value = res.data.token
       localStorage.setItem('pokedex_token', res.data.token)
@@ -49,6 +53,10 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const res = await api.post('/auth/register', { email, password, username })
+      if (!res.data?.user || !res.data?.token) {
+        error.value = 'No se pudo registrar. Revisa tu conexion e intenta de nuevo.'
+        return false
+      }
       user.value = res.data.user
       token.value = res.data.token
       localStorage.setItem('pokedex_token', res.data.token)

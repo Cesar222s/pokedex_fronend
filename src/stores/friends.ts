@@ -12,9 +12,10 @@ export const useFriendsStore = defineStore('friends', () => {
     loading.value = true
     try {
       const res = await api.get('/friends')
-      friends.value = res.data.friends
+      friends.value = Array.isArray(res.data?.friends) ? res.data.friends : []
     } catch (err) {
       console.error('Fetch friends error:', err)
+      friends.value = []
     } finally {
       loading.value = false
     }
@@ -23,9 +24,10 @@ export const useFriendsStore = defineStore('friends', () => {
   async function fetchPending() {
     try {
       const res = await api.get('/friends/pending')
-      pending.value = res.data.pending
+      pending.value = Array.isArray(res.data?.pending) ? res.data.pending : []
     } catch (err) {
       console.error('Fetch pending error:', err)
+      pending.value = []
     }
   }
 

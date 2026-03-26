@@ -10,9 +10,10 @@ export const useTeamsStore = defineStore('teams', () => {
     loading.value = true
     try {
       const res = await api.get('/teams')
-      teams.value = res.data.teams
+      teams.value = Array.isArray(res.data?.teams) ? res.data.teams : []
     } catch (err) {
       console.error('Fetch teams error:', err)
+      teams.value = []
     } finally {
       loading.value = false
     }

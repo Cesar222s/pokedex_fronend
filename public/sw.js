@@ -1,7 +1,8 @@
-const CACHE_STATIC_NAME = 'pokedex-static-v4';
-const CACHE_DYNAMIC_NAME = 'pokedex-dynamic-v4';
-const CACHE_API_NAME = 'pokedex-api-v4';
-const CACHE_IMAGES_NAME = 'pokedex-images-v4';
+const CACHE_VERSION = 'v5';
+const CACHE_STATIC_NAME = `pokedex-static-${CACHE_VERSION}`;
+const CACHE_DYNAMIC_NAME = `pokedex-dynamic-${CACHE_VERSION}`;
+const CACHE_API_NAME = `pokedex-api-${CACHE_VERSION}`;
+const CACHE_IMAGES_NAME = `pokedex-images-${CACHE_VERSION}`;
 
 // Rutas fijas de la aplicación (App Shell)
 const APP_SHELL = [
@@ -105,14 +106,22 @@ self.addEventListener('activate', e => {
   // 3. Eliminar cache vieja de versiones anteriores
   const clearCache = caches.keys().then(keys => {
     console.log('[SW] Found caches:', keys);
+    const activeCaches = new Set([
+      CACHE_STATIC_NAME,
+      CACHE_DYNAMIC_NAME,
+      CACHE_API_NAME,
+      CACHE_IMAGES_NAME
+    ]);
+
     return Promise.all(
       keys.map(key => {
-        const isOldVersion = 
-          !key.includes('v2') && 
-          (key.includes('pokedex-static') || 
-           key.includes('pokedex-dynamic') || 
-           key.includes('pokedex-api') || 
-           key.includes('pokedex-images'));
+        const isPokedexCache =
+          key.includes('pokedex-static') ||
+          key.includes('pokedex-dynamic') ||
+          key.includes('pokedex-api') ||
+          key.includes('pokedex-images');
+
+        const isOldVersion = isPokedexCache && !activeCaches.has(key);
         
         if (isOldVersion) {
           console.log('[SW] 🗑️  Eliminando cache antigua:', key);
@@ -145,6 +154,12 @@ self.addEventListener('fetch', e => {
   // 1. PETICIONES DE ESCRITURA (POST, PUT, DELETE)
   // ========================
   if (request.method !== 'GET') {
+    // Auth should never be queued offline. Let the browser/app handle the error explicitly.
+    if (url.pathname.startsWith('/api/auth/')) {
+      e.respondWith(fetch(request));
+      return;
+    }
+
     e.respondWith(
       fetch(request.clone()).catch(async (err) => {
         console.warn('[SW] ❌ Falla de conexión en petición de escritura. Guardando en IndexedDB...', err);
@@ -187,7 +202,7 @@ self.addEventListener('fetch', e => {
   // ========================
 
   // API Requests - Network First (intentar red primero, si falla usar cache)
-  if (url.pathname.includes('/api/') || url.hostname.includes('railway')) {
+  if (url.pathname.startsWith('/api/')) {
     e.respondWith(networkFirstStrategy(request));
     return;
   }
@@ -242,7 +257,8 @@ async function networkFirstStrategy(request) {
     }
 
     // Si no hay cache, devolver página offline
-    if (request.headers.get('accept').includes('text/html')) {
+    const acceptHeader = request.headers.get('accept') || '';
+    if (acceptHeader.includes('text/html')) {
       console.log('[SW] 📄 Devolviendo página offline');
       return OFFLINE_PAGE;
     }
