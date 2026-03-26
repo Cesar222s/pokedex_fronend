@@ -156,7 +156,16 @@ self.addEventListener('fetch', e => {
   if (request.method !== 'GET') {
     // Auth should never be queued offline. Let the browser/app handle the error explicitly.
     if (url.pathname.startsWith('/api/auth/')) {
-      e.respondWith(fetch(request));
+      e.respondWith(
+        fetch(request.clone()).catch(() =>
+          new Response(JSON.stringify({
+            error: 'No se pudo conectar con el servidor de autenticacion'
+          }), {
+            headers: { 'Content-Type': 'application/json' },
+            status: 503
+          })
+        )
+      );
       return;
     }
 

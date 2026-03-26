@@ -1,7 +1,14 @@
 import axios from 'axios'
 
+const rawApiBaseUrl = import.meta.env.VITE_API_URL?.trim()
+const apiBaseUrl = rawApiBaseUrl && rawApiBaseUrl.length > 0 ? rawApiBaseUrl : '/api'
+
+if (typeof window !== 'undefined' && apiBaseUrl === '/api' && window.location.hostname.includes('railway.app')) {
+  console.error('[API] VITE_API_URL no configurada en Railway. Las peticiones /api irán al frontend y pueden fallar con 404/405.')
+}
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json'
   }

@@ -40,11 +40,11 @@ async function handleLogin() {
       <form @submit.prevent="handleLogin" class="auth-form">
         <div class="form-group">
           <label>Correo electrónico</label>
-          <input v-model="email" type="email" class="input" placeholder="ash@pokemon.com" required />
+          <input v-model="email" type="email" class="input" placeholder="ash@pokemon.com" autocomplete="email" required />
         </div>
         <div class="form-group">
           <label>Contraseña</label>
-          <input v-model="password" type="password" class="input" placeholder="••••••••" required />
+          <input v-model="password" type="password" class="input" placeholder="••••••••" autocomplete="current-password" required />
         </div>
         <button type="submit" class="btn btn-primary btn-lg" :disabled="authStore.loading" style="width:100%">
           <i class="fas fa-sign-in-alt"></i>

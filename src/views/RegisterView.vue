@@ -41,15 +41,15 @@ async function handleRegister() {
       <form @submit.prevent="handleRegister" class="auth-form">
         <div class="form-group">
           <label>Nombre de Entrenador</label>
-          <input v-model="username" type="text" class="input" placeholder="Ash Ketchum" required />
+          <input v-model="username" type="text" class="input" placeholder="Ash Ketchum" autocomplete="username" required />
         </div>
         <div class="form-group">
           <label>Correo electrónico</label>
-          <input v-model="email" type="email" class="input" placeholder="ash@pokemon.com" required />
+          <input v-model="email" type="email" class="input" placeholder="ash@pokemon.com" autocomplete="email" required />
         </div>
         <div class="form-group">
           <label>Contraseña</label>
-          <input v-model="password" type="password" class="input" placeholder="Mínimo 6 caracteres" required minlength="6" />
+          <input v-model="password" type="password" class="input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6" />
         </div>
         <button type="submit" class="btn btn-primary btn-lg" :disabled="authStore.loading" style="width:100%">
           <i class="fas fa-user-plus"></i>
